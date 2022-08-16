@@ -1672,7 +1672,17 @@ network-issues with your other WiFi-devices on your WiFi-network. */
       }
       brewReady = brewReadyCurrent;
     }
-    setHardwareLed(((brewReady && (ENABLE_HARDWARE_LED_OFF_WHEN_SCREENSAVER == 0 || screenSaverOn == false))) || (steaming && Input >= steamReadyTemp));
+    // setHardwareLed(((brewReady && (ENABLE_HARDWARE_LED_OFF_WHEN_SCREENSAVER == 0 || screenSaverOn == false))) || (steaming && Input >= steamReadyTemp)); // ORIGINAL CODE
+    setHardwareLed(((brewReady && (ENABLE_HARDWARE_LED_OFF_WHEN_SCREENSAVER == 0 || screenSaverOn == false))) || (steaming && Input >= setPointSteam));
+    digitalWrite(pinWaterTankLed, screenSaverOn);
+    if (ENABLE_GPIO_ACTION == 2 && cleaning == 0) {
+      digitalWrite(pinHotwaterAction, screenSaverOn);
+      digitalWrite(pinBrewAction, !(brewReady && (ENABLE_HARDWARE_LED_OFF_WHEN_SCREENSAVER == 0 || screenSaverOn == false)));
+      // digitalWrite(pinSteamingAction, !(steaming && Input >= steamReadyTemp)); // ORIGINAL CODE
+      digitalWrite(pinSteamingAction, !(steaming && Input >= setPointSteam));
+      // setGpioAction(BREWING, ((brewReady && (ENABLE_HARDWARE_LED_OFF_WHEN_SCREENSAVER == 0 || screenSaverOn == false))));
+      // setGpioAction(STEAMING, (steaming && Input >= steamReadyTemp));
+    }
 
     // network related stuff
     if (!forceOffline) {
@@ -1759,6 +1769,7 @@ network-issues with your other WiFi-devices on your WiFi-network. */
             unsigned long now = millis();
             if (now >= lastMQTTStatusReportTime + lastMQTTStatusReportInterval) {
               lastMQTTStatusReportTime = now;
+              mqttPublish((char*)"activeState", (char*)number2string(activeState));
               mqttPublish((char*)"temperature", number2string(Input));
               mqttPublish((char*)"temperatureAboveTarget", number2string((Input - *activeSetPoint)));
               mqttPublish((char*)"heaterUtilization", number2string(convertOutputToUtilisation(Output)));
@@ -2302,6 +2313,28 @@ network-issues with your other WiFi-devices on your WiFi-network. */
 #ifdef pinSteamingAction
     pinMode(pinSteamingAction, OUTPUT);
     setGpioAction(STEAMING, 1);
+#endif
+#endif
+
+#if (ENABLE_GPIO_ACTION == 2)
+#ifdef pinBrewAction
+    pinMode(pinBrewAction, OUTPUT);
+    digitalWrite(pinBrewAction, 0);
+#endif
+#ifdef pinHotwaterAction
+    pinMode(pinHotwaterAction, OUTPUT);
+    digitalWrite(pinHotwaterAction, 0);
+#endif
+#ifdef pinSteamingAction
+    pinMode(pinSteamingAction, OUTPUT);
+    digitalWrite(pinSteamingAction, 0);
+#endif
+#endif
+
+#if (ENABLE_WATER_TANK_LED == 1)
+#ifdef pinWaterTankLed
+    pinMode(pinWaterTankLed, OUTPUT);
+    digitalWrite(pinWaterTankLed, 0);
 #endif
 #endif
 

@@ -1,0 +1,263 @@
+/********************************************************
+ * Version 3.2.0
+ * Config must be configured by the user
+ *****************************************************/
+
+#ifndef _userConfig_H
+#define _userConfig_H
+
+/********************************************************
+ * General settings
+ *****************************************************/
+#define MACHINE_TYPE "gaggia"  // supported values are "rancilio", "gaggia" and "ecm".
+#define TEMPSENSOR 3          // 2=TSIC306 (fully supported); 3=MAX6690K (working but untested); (1=DS19B20 not supported anymore)
+#define TEMPSENSORRECOVERY 0  // 1 = on, 2= off (default). If off, temp sensor errors will stop the heater until power cycle
+#define FORCE_OFFLINE 0       // 0=Use network | 1=Disable all network stuff (WiFi, MQTT, Blynk).
+#define DISABLE_SERVICES_ON_STARTUP_ERRORS 1 // 1=on (default) when a service cannot be connected during startup, never retry | 0=off Try reconnecting to service during regular operations.
+#define ONLYPID 0             // 1=Only PID with no Preinfussion | 0=PID + Preinfussion
+#define TRIGGERTYPE HIGH      // LOW = low trigger, HIGH = high trigger relay
+#define OTA true              // true=activate update via OTA
+#define GRAFANA 0             // 0=default(off), 1=enable grafana visualisation by Markus (simply ask him for free access)
+#define EMERGENCY_TEMP 150 //135    // If temperature is higher then notifications are send via display/debug/mqtt and PID is temporary disabled.
+                              // Set this to the higest temperature supported by your maschine minus a few degress. (Silvia 5E: 135)
+#define HEATER_INACTIVITY_TIMER 30  // 0=Disable. When there is no activity at the maschine for this amount of minutes, the heater should stop heating until new activity is detected.
+#define BREWTIME_TIMER 1             // 0 (default)=brewtime-countdown is equal BREWTIMEX. 1=brewtime-countdown is BREWTIMEX + PREINFUSIONX + PREINFUSION_PAUSEX
+
+#define BREWDETECTION 1               // 0 = off | 1 = on using Hardware (ONLYPID=0 or ONLYPID=1_using_ControlAction_BREWING) | 2 = on using Software (ONLYPID=1 auto-detection)
+#define BREWDETECTION_SENSITIVITY 0.6 // If temperature drops in the past 3 seconds by this number (Celcius), then a brew is detected (BREWDETECTION must be 1)
+#define BREWDETECTION_WAIT 90         // (ONLYPID=1) 50=default: Software based BrewDetection is disabled after brewing for this number (seconds)
+#define BREWDETECTION_POWER 50        // heater utiilization (in percent) during brew (BREWDETECTION must be 1)
+
+#define BREW_READY_DETECTION        1.1 // 0=off | 0.x=If measured temperature of the last 60 seconds has been within this defined margin around the SET_POINT, we are able to brew. (defaults: TEMPSENSOR==2: 0.3, TEMPSENSOR==3: 0.9)
+#define ENABLE_HARDWARE_LED         1   // 0=off | 1=Single LED | 2=WS2812b - LEDs at GPO pinLed will lighten when BREW_READY_DETECTION triggers or temperature>SETPOINT_STEAM
+#define ENABLE_HARDWARE_LED_OFF_WHEN_SCREENSAVER 1 // 1=yes | 0=no. If yes, disable LED when screensaver is running
+#define ENABLE_HARDWARE_LED_NUMBER  0   // 0=off | (ENABLE_HARDWARE_LED=2) Number of WS2812b-based LEDs connected
+#define ENABLE_HARDWARE_LED_RGB_ON  LightGreen  // (ENABLE_HARDWARE_LED=2) Color name when leds should be turned on. List of Colours: https://github.com/FastLED/FastLED/wiki/Pixel-reference
+#define ENABLE_HARDWARE_LED_RGB_OFF LightPink  // (ENABLE_HARDWARE_LED=2) Color name when leds should be turned off.
+
+#define ENABLE_WATER_TANK_LED 1 // 1=Enable water tank led | 0=default
+#define pinWaterTankLed 4
+
+#define DEBUGMODE                // to enable Debug uncomment this line. Afterwards you can connect via telnet to port 23 to see debug logs.
+#define ENABLE_CALIBRATION_MODE 0 // 0=off (default). 1=on. If on, PID is disabled and CALIBRATION information is logged in DEBUG log (eg. CONTROLS_CONFIG, WATER_LEVEL_SENSOR, SCALE_SENSOR)
+
+
+/*******
+ * Hardware GPIO Pin Mapping
+ * Hints can be found in our wiki: https://github.com/medlor/bleeding-edge-ranciliopid/wiki/ESP32-Setup
+ *******/
+#define pinTemperature    26   // read temperature (TSIC): esp8266=2, esp32=26
+#define pinRelayHeater    16   // trigger relais used to heat water: esp8266=14, esp32=16
+#define pinRelayVentil    18   // (ONLYPID=0) trigger relais used to open (three-way) valve: esp8266=13, esp32=18
+#define pinRelayPumpe     19   // (ONLYPID=0) trigger relais used to activate the water pump: esp8266=15, esp32=19
+#define pinLed            14   // (ENABLE_HARDWARE_LED=1) Hardware LED (16 is also "free" to use): esp8266=15, esp32=14
+
+#define ENABLE_GPIO_ACTION  2        // 0=off (default) | 1=GPIOs related to actions are set to HIGH when enabled (eg to be used by LEDs) | 2=GPIOs related to brew o steam ready
+#define pinBrewAction       2
+#define pinHotwaterAction   5
+#define pinSteamingAction   15
+
+// Pin mapping for MAX6690 temperature sensor
+#define pinTemperatureSO  17
+#define pinTemperatureCS  23
+#define pinTemperatureCLK 26
+
+/*******
+ * GPIO Pin Usage: Here you can define how the GPIO boards (analog/digital) shall be used to execute functions.
+ *
+ * Parsing rules:
+ *  - left to right: First ACTION_BLOCK which matches the gpio-value is executed and following actions ignored
+ *  - gpio-values not matching any ACTION_BLOCKs are ignored
+ *
+ * Format of CONTROLS_CONFIG:
+ *  CONTROLS_CONFIG = "<GPIO_CONFIG_BLOCK_1>#<GPIO_CONFIG_BLOCK_2>#<unlimited number of blocks>"
+ *     GPIO_CONFIG_BLOCK_1 = "<GPIO_Number>:<INPUT_PULLDOWN|INPUT_PULLUP|INPUT>:<analog|digital>:<toggle|trigger>|<ACTION_BLOCK_1>;<ACTION_BLOCK_2>;<unlimited number of blocks>"
+ *        GPIO number: ESP8266/nodemcu: A0 = 17 && esp32: https://randomnerdtutorials.com/esp32-pinout-reference-gpios/
+ *        "toggle" keeps its state and "trigger" only shortly changes its state before it resets.
+ *        ACTION_BLOCK = "<lowerBoundary>-<upperBoundary>:<ACTION>"
+ *            ACTION = BREWING|HOTWATER|STEAMING|MENU|... (see controls.h for a full list of supported actions)
+ *
+ *
+ *    Examples:
+ *    a) Hardware Switch (On/Off) on A0(GPIO17) which controls BREWING when gpio-value >= 700.
+ *    #define CONTROLS_CONFIG "17:INPUT:analog:toggle|700-1024:BREWING#"
+ *
+ *    b) Hardware Buttons via eg. resistance network which is capably of delivering multiple distinct values for the ADC.
+ *    #define CONTROLS_CONFIG "17:INPUT:analog:trigger|90-130:BREWING;270-320:STEAMING;390-420:HOTWATER#16:INPUT_PULLUP:digital:trigger|0-0:BREWING#"
+ *
+ *    c) Hardware Switches via eg. resistance network which is capably of delivering multiple distinct values for the ADC.
+ *    #define CONTROLS_CONFIG "17:INPUT:analog:toggle|245-260:BREWING;525-540:STEAMING;802-815:HOTWATER#16:INPUT_PULLUP:digital:toggle|0-0:BREWING#"
+ *
+ *    d) Multiple Hardware Switches:
+ *       - Hardware Switch (On/Off) on GPIO25 which controls BREWING
+ *       - Hardware Switch (On/Off) on GPIO32 which controls HOTWATER
+ *       - Hardware Switch (On/Off) on GPIO33 which controls STEAMING -- all without an resistor (direct connected, uses internal INPUT_PULLUP resistor)
+ *    #define CONTROLS_CONFIG "25:INPUT_PULLUP:digital:toggle|0-0:BREWING#32:INPUT_PULLUP:digital:toggle|0-0:HOTWATER#33:INPUT_PULLUP:digital:toggle|0-0:STEAMING#"
+ *
+ *    e) ESP32 FULL-CONTROL CONFIG (https://github.com/medlor/bleeding-edge-ranciliopid/wiki/ESP32-Setup)
+ *    #define CONTROLS_CONFIG "32:INPUT_PULLUP:digital:toggle|0-0:BREWING#33:INPUT_PULLUP:digital:toggle|0-0:HOTWATER#27:INPUT_PULLUP:digital:toggle|0-0:STEAMING#"
+ *
+ *******/
+#define CONTROLS_CONFIG "32:INPUT_PULLUP:digital:toggle|0-0:BREWING#33:INPUT_PULLUP:digital:toggle|0-0:HOTWATER#25:INPUT_PULLUP:digital:toggle|0-0:STEAMING#"
+
+#define DEBOUNCE_ANALOG_GPIO  0  // 0=off (default, no debounce check) | button press debounce time (in ms) to wait before acknowledgment of press (huge impact on performance. set as low as possible, eg 1-10ms).
+#define DEBOUNCE_DIGITAL_GPIO 50  // 30=default, 0=off (no debounce check) | button press debounce time (in ms) to wait before acknowledgment of press (set to any value, example 20-50ms).
+
+/*
+ * In "FullControl" modification, you can also trigger controlActions when multiple buttons (toggle) are activated the same time. This allows 
+ * to directly control more actions without using mqtt/blynk and GPIO ports.
+ * You can define up to 3 multi-toggles, which are defined by the ACTION and the list of GPIO ports (must be defined in CONTROLS_CONFIG) 
+ * in curly brackets. (The list shall include more than 1 and at most 5 GPIO ports).
+ * Only the first multi-toggle's ACTION which gpio's matches is triggered, so think about the order.
+ */
+#define MULTI_TOGGLE_1_ACTION "HOTWATER"          // default="UNDEFINED_ACTION"
+#define MULTI_TOGGLE_1_GPIOS { 25, 32}            // default/disable={} , enable=example: { 25, 32, 33 }
+#define MULTI_TOGGLE_2_ACTION "UNDEFINED_ACTION"  // default="UNDEFINED_ACTION"
+#define MULTI_TOGGLE_2_GPIOS {}                   // default/disable={} , enable=example: { 25, 33 }
+#define MULTI_TOGGLE_3_ACTION "UNDEFINED_ACTION"  // default="UNDEFINED_ACTION"
+#define MULTI_TOGGLE_3_GPIOS {}                   // default/disable={} , enable=example: { 25, 32 }
+
+
+/*******
+ * Display Settings
+ *******/
+#define DISPLAY_HARDWARE 1                // 0=Deaktiviert, 1=SH1106_128X64, 2=SSD1306_128X64
+#define ROTATE_DISPLAY 0                  // 0=Off (Default), 1=180 degree clockwise rotation
+#define DISPLAY_TEXT_STATE 1              // 1=On  (Default), 0=Off display text of Maschine-state
+#define ICON_COLLECTION 0                 // 0:="simple", 1:="smiley", 2:="winter", 3:="text"
+#define DISPLAY_TEXT "Hola Daniel"        // Text is displayed on bootup (max 21 chars)
+//#define OVERWRITE_VERSION_DISPLAY_TEXT "" // Text is displayed on bootup one line below DISPLAY_TEXT (max 21 chars)
+#define ENABLE_PROFILE_STATUS 2           // 0 = off. 1 = always show . 2 = only show not-default profile (which is "profile 1")
+#define ENABLE_FAILURE_STATUS_ICONS 1     // 1 = on (default), 0 = off. If enabled show status icons if services are offline.
+#define ENABLE_SCREEN_SAVER 3             // 0=Disable, 1=Enable(blank screen), 2=Enable(use BrewReady Collection Icon), 3=Enable(Use Maschine logo)
+#define ENABLE_POWER_OFF_COUNTDOWN 0      // 0 = off (default) | 1...n If maschine is inactive for this amount of seconds, we expect the maschine
+                                          // to shutdown (Silvia 5E: 1800). Show countdown for the last 3 minutes.
+#define STEAM_READY_TEMP 135               // (display only) if temperature is higher then this value then the steam-ready icon is shown
+                                          // (Rancilio: 116, ECM Casa Prima: 130?, ...)
+
+
+/*******
+ * Menu Settings
+ * 
+ * Ordered list of menu items which will be displayed when the "menu" action is triggered.
+ *
+ * Format of MENU_CONFIG:
+ *  MENU_CONFIG = "<MENU_CONFIG_BLOCK_1>#<MENU_CONFIG_BLOCK_2>#<unlimited number of blocks>"
+ *     MENU_CONFIG_BLOCK_X = "<TYPE>:<ITEM>:<STEP_SIZE>"
+ *        TYPE = Is either "CONFIG" or "ACTION". Depending on the ITEM.
+ *        ITEM = PROFILE|SETPOINT|SETPOINTSTEAM|BREWTIME|PREINFUSION|SLEEPING|CLEANING|BREWTIME_END_DETECTION|SCALE_SENSOR_WEIGHT_SETPOINT|... (see controls.h for a full list of supported items).
+ *        STEP_SIZE = Definition of how much the actual value is changed when INC or DEC button is pressed. Use 1 for booleans.
+ *
+ *    Example:
+ *    #define MENU_CONFIG "ACTION:SLEEPING:1#CONFIG:SETPOINT:0.5#CONFIG:BREWTIME:0.5#CONFIG:PREINFUSION_PAUSE:0.1#CONFIG:PREINFUSION:0.1#CONFIG:PID_ON:1"
+ *
+ *******/
+#define MENU_CONFIG ""
+
+
+/*******
+ * General PID values
+ *******/
+#define SETPOINT_STEAM 110            // Steam Temperature SetPoint (Rancilio: 116, ECM Casa Prima: 145, ...)
+#define STEADYPOWER 4.6 // Constant power of heater to accomodate against loss of heat to environment (in %)
+                        // (Rancilio Silvia 5E: 4.6 , ...)
+#define STEADYPOWER_OFFSET_TIME 850   // If brew group is very cold, we need to put additional power to the heater:
+                                      // How long should this additional power be delivered (in s) (Rancilio Silvia 5E: 850, ...)
+#define STEADYPOWER_OFFSET 3.0        // How much power should be added? (in %) (Rancilio Silvia 5E: 2.9, ...)
+
+// Inner Zone PID values
+#define AGGKP 80        // Kp (Rancilio Silvia 5E: 80, ...)
+#define AGGTN 11        // Tn (Rancilio Silvia 5E: 11, ...)
+#define AGGTV 16        // Tv (Rancilio Silvia 5E: 16, ...)
+
+// Outer Zone PID values
+#define AGGOKP 170      // Kp (Rancilio Silvia 5E: 170, ...)
+#define AGGOTN 40       // Tn (Rancilio Silvia 5E: 40, ...)
+#define AGGOTV 40       // Tv (Rancilio Silvia 5E: 40, ...)
+
+
+/*******
+ * PROFILE dependent Temperature, Brew & Preinfusion settings
+ *******/
+#define SETPOINT1 93           // Temperature SetPoint
+#define STARTTEMP1 78.1        // If temperature is below this value then Coldstart state should be triggered // (Rancilio Silvia 5E: 80.6 , ...)
+#define BREWTIME1 24.1         // length of time of the brewing (in sec). Used to limit brew time via hardware (ONLYPID=0) or visually (ONLYPID=1).
+#define PREINFUSION1 2.3       // (ONLYPID!=1) Default=0, length of time of the pre-infusion (in sec). Set to "0" to disable pre-infusion
+#define PREINFUSION_PAUSE1 2.2 // (ONLYPID!=1) Default=0, length of time of the pre-infusion pause (time in between the pre-infussion and brewing) (in sec). Set to "0" to disable pre-infusion pause.
+#define BREWTIME_END_DETECTION1 0  // 0 (default) = brew will end based on time (requires ONLYPID=0) | 1 = brew will end based on weight (requires SCALE_SENSOR_ENABLE=1)
+#define SCALE_SENSOR_WEIGHT_SETPOINT1    36  // Brew weight in grams
+
+#define SETPOINT2 94           // Temperature SetPoint
+#define STARTTEMP2 79.1        // If temperature is below this value then Coldstart state should be triggered // (Rancilio Silvia 5E: 80.6 , ...)
+#define BREWTIME2 24.0         // length of time of the brewing (in sec). Used to limit brew time via hardware (ONLYPID=0) or visually (ONLYPID=1).
+#define PREINFUSION2 2.6       // (ONLYPID!=1) Default=0, length of time of the pre-infusion (in sec). Set to "0" to disable pre-infusion
+#define PREINFUSION_PAUSE2 2.2 // (ONLYPID!=1) Default=0, length of time of the pre-infusion pause (time in between the pre-infussion and brewing) (in sec). Set to "0" to disable pre-infusion pause.
+#define BREWTIME_END_DETECTION2 0  // 0 (default) = brew will end based on time (requires ONLYPID=0) | 1 = brew will end based on weight (requires SCALE_SENSOR_ENABLE=1)
+#define SCALE_SENSOR_WEIGHT_SETPOINT2    36  // Brew weight in grams
+
+#define SETPOINT3 55           // Temperature SetPoint
+#define STARTTEMP3 40          // If temperature is below this value then Coldstart state should be triggered // (Rancilio Silvia 5E: 80.6 , ...)
+#define BREWTIME3 25         // length of time of the brewing (in sec). Used to limit brew time via hardware (ONLYPID=0) or visually (ONLYPID=1).
+#define PREINFUSION3 6         // (ONLYPID!=1) Default=0, length of time of the pre-infusion (in sec). Set to "0" to disable pre-infusion
+#define PREINFUSION_PAUSE3 5   // (ONLYPID!=1) Default=0, length of time of the pre-infusion pause (time in between the pre-infussion and brewing) (in sec). Set to "0" to disable pre-infusion pause.
+#define BREWTIME_END_DETECTION3 0  // 0 (default) = brew will end based on time (requires ONLYPID=0) | 1 = brew will end based on weight (requires SCALE_SENSOR_ENABLE=1)
+#define SCALE_SENSOR_WEIGHT_SETPOINT3    36  // Brew weight in grams
+
+
+/*******
+ * Water level measurement 
+ *******/
+#define WATER_LEVEL_SENSOR_ENABLE  0          // 0=Off (default), 1=On  (only VL53L0X supported)
+#define WATER_LEVEL_SENSOR_SDA    17          // (ESP32 only: dedicated I2C bus required)
+#define WATER_LEVEL_SENSOR_SCL     4          // (ESP32 only: dedicated I2C bus required)
+#define WATER_LEVEL_SENSOR_LOW_THRESHOLD 200  // use ENABLE_CALIBRATION_MODE=1 to manually determine correct value (in mm). If measurement is > than this number, the system determines low water.
+
+
+/*******
+ * Scale settings
+ *******/
+#define SCALE_SENSOR_ENABLE                0      // 0=Off (default), 1=On  (only HX711 supported)
+#define SCALE_SENSOR_DATA_PIN              13     // HX711 Data Pin
+#define SCALE_SENSOR_CLK_PIN               12     // HX711 Clock Pin
+#define SCALE_SENSOR_CALIBRATION_WEIGHT    200.0  // any known weight which is used for calibration (in gramm)
+#define SCALE_SENSOR_CALIBRATION_FACTOR    1.0    // manually determined calibration factor (initial 1.0)
+
+
+/*******
+ * CLEANING PROGRAM settings (ONLYPID!=0)
+ *******/
+#define CLEANING_ENABLE_AUTOMATIC 1  // Default=1 (enable cleaning program), 0=Off (disable cleaning program), Shall we start automatic cleaning program when state==CLEANING and the brew button/action is triggered?
+#define CLEANING_CYCLES   5          // Default=5, How many cleaning cycles to execute?
+#define CLEANING_INTERVAL 4          // Default=4, How many seconds shall we flush hotwater?
+#define CLEANING_PAUSE    3          // Default=3, How many seconds shall we pause after flushing hotwater?
+
+
+/*******
+ * networking and services
+ *******/
+// Wifi
+#define HOSTNAME "gaggia"
+#define D_SSID "Gato Noni"
+#define PASS "Noni260517"
+#define STATIC_IP ip(192, 168, 100, 169);            //uncomment and set this to your network to force static IP
+#define STATIC_GATEWAY gateway(192, 168, 100, 1);  //uncomment and set this to your network to force static IP
+#define STATIC_SUBNET subnet(255,255,255,0);     //uncomment and set this to your network to force static IP
+
+// OTA
+#define OTAPASS "otapassBleedingEdge"    // Password for OTA updates
+
+// Blynk
+#define BLYNK_ENABLE 0       // 1=on (Blynk PID values overwrite userConfig.h settings) | 0=off (default)
+#define BLYNKAUTH "blynkauthcode"
+#define BLYNKADDRESS "any.blynk.server.adress"   // IP-Address of locally installed blynk server
+#define BLYNKPORT 8080
+
+// MQTT
+#define MQTT_ENABLE 1        // 0 = off (no MQTT at all) | 1=MQTT client  | 2=MQTT Server if you dont have a mqtt server running on another system)
+#define MQTT_USERNAME "mqtt_user"
+#define MQTT_PASSWORD "dani3651"
+#define MQTT_TOPIC_PREFIX "home/cocina/"  // topic will be "<MQTT_TOPIC_PREFIX><HOSTNAME>/<READING>" <HOSTNAME> is defined in //Wifi section
+#define MQTT_SERVER_IP "192.168.100.77"       // (MQTT_ENABLE=1) IP-Address of locally installed mqtt server
+#define MQTT_SERVER_PORT 1883              // (MQTT_ENABLE=1)
+
+#endif // _userConfig_H
