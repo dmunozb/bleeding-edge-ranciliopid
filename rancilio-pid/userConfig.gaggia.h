@@ -20,7 +20,7 @@
 #define GRAFANA 0             // 0=default(off), 1=enable grafana visualisation by Markus (simply ask him for free access)
 #define EMERGENCY_TEMP 150 //135    // If temperature is higher then notifications are send via display/debug/mqtt and PID is temporary disabled.
                               // Set this to the higest temperature supported by your maschine minus a few degress. (Silvia 5E: 135)
-#define HEATER_INACTIVITY_TIMER 30  // 0=Disable. When there is no activity at the maschine for this amount of minutes, the heater should stop heating until new activity is detected.
+#define HEATER_INACTIVITY_TIMER 45  // 0=Disable. When there is no activity at the maschine for this amount of minutes, the heater should stop heating until new activity is detected.
 #define BREWTIME_TIMER 1             // 0 (default)=brewtime-countdown is equal BREWTIMEX. 1=brewtime-countdown is BREWTIMEX + PREINFUSIONX + PREINFUSION_PAUSEX
 
 #define BREWDETECTION 1               // 0 = off | 1 = on using Hardware (ONLYPID=0 or ONLYPID=1_using_ControlAction_BREWING) | 2 = on using Software (ONLYPID=1 auto-detection)
@@ -30,7 +30,7 @@
 
 #define BREW_READY_DETECTION        1.1 // 0=off | 0.x=If measured temperature of the last 60 seconds has been within this defined margin around the SET_POINT, we are able to brew. (defaults: TEMPSENSOR==2: 0.3, TEMPSENSOR==3: 0.9)
 #define ENABLE_HARDWARE_LED         1   // 0=off | 1=Single LED | 2=WS2812b - LEDs at GPO pinLed will lighten when BREW_READY_DETECTION triggers or temperature>SETPOINT_STEAM
-#define ENABLE_HARDWARE_LED_OFF_WHEN_SCREENSAVER 1 // 1=yes | 0=no. If yes, disable LED when screensaver is running
+#define ENABLE_HARDWARE_LED_OFF_WHEN_SCREENSAVER 0 // 1=yes | 0=no. If yes, disable LED when screensaver is running
 #define ENABLE_HARDWARE_LED_NUMBER  0   // 0=off | (ENABLE_HARDWARE_LED=2) Number of WS2812b-based LEDs connected
 #define ENABLE_HARDWARE_LED_RGB_ON  LightGreen  // (ENABLE_HARDWARE_LED=2) Color name when leds should be turned on. List of Colours: https://github.com/FastLED/FastLED/wiki/Pixel-reference
 #define ENABLE_HARDWARE_LED_RGB_OFF LightPink  // (ENABLE_HARDWARE_LED=2) Color name when leds should be turned off.
@@ -38,7 +38,7 @@
 #define ENABLE_WATER_TANK_LED 1 // 1=Enable water tank led | 0=default
 #define pinWaterTankLed 4
 
-#define DEBUGMODE                // to enable Debug uncomment this line. Afterwards you can connect via telnet to port 23 to see debug logs.
+// #define DEBUGMODE                // to enable Debug uncomment this line. Afterwards you can connect via telnet to port 23 to see debug logs.
 #define ENABLE_CALIBRATION_MODE 0 // 0=off (default). 1=on. If on, PID is disabled and CALIBRATION information is logged in DEBUG log (eg. CONTROLS_CONFIG, WATER_LEVEL_SENSOR, SCALE_SENSOR)
 
 
@@ -158,7 +158,7 @@
 /*******
  * General PID values
  *******/
-#define SETPOINT_STEAM 110            // Steam Temperature SetPoint (Rancilio: 116, ECM Casa Prima: 145, ...)
+#define SETPOINT_STEAM 140            // Steam Temperature SetPoint (Rancilio: 116, ECM Casa Prima: 145, ...)
 #define STEADYPOWER 4.6 // Constant power of heater to accomodate against loss of heat to environment (in %)
                         // (Rancilio Silvia 5E: 4.6 , ...)
 #define STEADYPOWER_OFFSET_TIME 850   // If brew group is very cold, we need to put additional power to the heater:
@@ -257,7 +257,7 @@
 #define MQTT_USERNAME "mqtt_user"
 #define MQTT_PASSWORD "dani3651"
 #define MQTT_TOPIC_PREFIX "home/cocina/"  // topic will be "<MQTT_TOPIC_PREFIX><HOSTNAME>/<READING>" <HOSTNAME> is defined in //Wifi section
-#define MQTT_SERVER_IP "192.168.100.77"       // (MQTT_ENABLE=1) IP-Address of locally installed mqtt server
+#define MQTT_SERVER_IP "192.168.100.59"       // (MQTT_ENABLE=1) IP-Address of locally installed mqtt server
 #define MQTT_SERVER_PORT 1883              // (MQTT_ENABLE=1)
 
 #endif // _userConfig_H
