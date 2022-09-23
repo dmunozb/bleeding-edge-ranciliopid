@@ -68,7 +68,7 @@ char topicWill[256];
 char topicSet[256];
 char topicActions[256];
 unsigned long lastMQTTStatusReportTime = 0;
-unsigned long lastMQTTStatusReportInterval = 5000; // mqtt send status-report every 5 second
+unsigned long lastMQTTStatusReportInterval = 2000;// 5000; // mqtt send status-report every 5 second
 const bool mqttFlagRetained = true;
 unsigned long mqttDontPublishUntilTime = 0;
 unsigned long mqttDontPublishBackoffTime = 60000; // Failsafe: dont publish if there are errors for 10 seconds
@@ -2153,7 +2153,8 @@ network-issues with your other WiFi-devices on your WiFi-network. */
       mqttPublishSettings();
 #if (MQTT_ENABLE == 1)
       unsigned long started = millis();
-      while ((millis() < started + 5000) && (steadyPowerMQTTDisableUpdateUntilProcessed != 0)) {
+      // while ((millis() < started + 5000) && (steadyPowerMQTTDisableUpdateUntilProcessed != 0)) {
+      while ((millis() < started + 2000) && (steadyPowerMQTTDisableUpdateUntilProcessed != 0)) {
         mqttClient.loop();
       }
 #endif
