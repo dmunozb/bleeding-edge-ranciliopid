@@ -18,7 +18,7 @@
 #define TRIGGERTYPE HIGH      // LOW = low trigger, HIGH = high trigger relay
 #define OTA true              // true=activate update via OTA
 #define GRAFANA 0             // 0=default(off), 1=enable grafana visualisation by Markus (simply ask him for free access)
-#define EMERGENCY_TEMP 150 //135    // If temperature is higher then notifications are send via display/debug/mqtt and PID is temporary disabled.
+#define EMERGENCY_TEMP 157 //135    // If temperature is higher then notifications are send via display/debug/mqtt and PID is temporary disabled.
                               // Set this to the higest temperature supported by your maschine minus a few degress. (Silvia 5E: 135)
 #define HEATER_INACTIVITY_TIMER 45  // 0=Disable. When there is no activity at the maschine for this amount of minutes, the heater should stop heating until new activity is detected.
 #define BREWTIME_TIMER 1             // 0 (default)=brewtime-countdown is equal BREWTIMEX. 1=brewtime-countdown is BREWTIMEX + PREINFUSIONX + PREINFUSION_PAUSEX
@@ -132,7 +132,7 @@
 #define ENABLE_SCREEN_SAVER 3             // 0=Disable, 1=Enable(blank screen), 2=Enable(use BrewReady Collection Icon), 3=Enable(Use Maschine logo)
 #define ENABLE_POWER_OFF_COUNTDOWN 0      // 0 = off (default) | 1...n If maschine is inactive for this amount of seconds, we expect the maschine
                                           // to shutdown (Silvia 5E: 1800). Show countdown for the last 3 minutes.
-#define STEAM_READY_TEMP 135               // (display only) if temperature is higher then this value then the steam-ready icon is shown
+#define STEAM_READY_TEMP 148              // (display only) if temperature is higher then this value then the steam-ready icon is shown
                                           // (Rancilio: 116, ECM Casa Prima: 130?, ...)
 
 
@@ -158,7 +158,7 @@
 /*******
  * General PID values
  *******/
-#define SETPOINT_STEAM 140            // Steam Temperature SetPoint (Rancilio: 116, ECM Casa Prima: 145, ...)
+#define SETPOINT_STEAM 145            // Steam Temperature SetPoint (Rancilio: 116, ECM Casa Prima: 145, ...)
 #define STEADYPOWER 4.6 // Constant power of heater to accomodate against loss of heat to environment (in %)
                         // (Rancilio Silvia 5E: 4.6 , ...)
 #define STEADYPOWER_OFFSET_TIME 850   // If brew group is very cold, we need to put additional power to the heater:
