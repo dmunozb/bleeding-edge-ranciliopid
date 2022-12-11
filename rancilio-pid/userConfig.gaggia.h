@@ -1,5 +1,5 @@
 /********************************************************
- * Version 3.2.0
+ * Version 3.2.2
  * Config must be configured by the user
  *****************************************************/
 
@@ -30,10 +30,10 @@
 #define BREWDETECTION_POWER 50        // heater utiilization (in percent) during brew (BREWDETECTION must be 1)
 
 #define BREW_READY_DETECTION        1.1 // 0=off | 0.x=If measured temperature of the last 60 seconds has been within this defined margin around the SET_POINT, we are able to brew. (defaults: TEMPSENSOR==2: 0.3, TEMPSENSOR==3: 0.9)
-#define ENABLE_HARDWARE_LED         1   // 0=off | 1=Single LED | 2=WS2812b - LEDs at GPO pinLed will lighten when BREW_READY_DETECTION triggers or temperature>SETPOINT_STEAM
+#define ENABLE_HARDWARE_LED         0   // 0=off | 1=Single LED | 2=WS2812b - LEDs at GPO pinLed will lighten when BREW_READY_DETECTION triggers or temperature>SETPOINT_STEAM
 #define ENABLE_HARDWARE_LED_OFF_WHEN_SCREENSAVER 0 // 1=yes | 0=no. If yes, disable LED when screensaver is running
 #define ENABLE_HARDWARE_LED_NUMBER  0   // 0=off | (ENABLE_HARDWARE_LED=2) Number of WS2812b-based LEDs connected
-#define ENABLE_HARDWARE_LED_RGB_ON  LightGreen // (ENABLE_HARDWARE_LED=2) Color name when leds should be turned on. List of Colours: https://github.com/FastLED/FastLED/wiki/Pixel-reference
+#define ENABLE_HARDWARE_LED_RGB_ON  LightGreen  // (ENABLE_HARDWARE_LED=2) Color name when leds should be turned on. List of Colours: https://github.com/FastLED/FastLED/wiki/Pixel-reference
 #define ENABLE_HARDWARE_LED_RGB_OFF LightPink  // (ENABLE_HARDWARE_LED=2) Color name when leds should be turned off.
 
 #define ENABLE_WATER_TANK_LED         2   // 2=WS2812b | 1=Enable water tank led | 0=default
@@ -52,8 +52,8 @@
  *******/
 #define pinTemperature    26   // read temperature (TSIC): esp8266=2, esp32=26
 #define pinRelayHeater    16   // trigger relais used to heat water: esp8266=14, esp32=16
-#define pinRelayValve     18   // (ONLYPID=0) trigger relais used to open (three-way) valve: esp8266=13, esp32=18
-#define pinRelayPump      19   // (ONLYPID=0) trigger relais used to activate the water pump: esp8266=15, esp32=19
+#define pinRelayVentil    18   // (ONLYPID=0) trigger relais used to open (three-way) valve: esp8266=13, esp32=18
+#define pinRelayPumpe     19   // (ONLYPID=0) trigger relais used to activate the water pump: esp8266=15, esp32=19
 #define pinHardwareLed    14   // (ENABLE_HARDWARE_LED=1) Hardware LED (16 is also "free" to use): esp8266=15, esp32=14
 
 #define ENABLE_GPIO_ACTION  2        // 0=off (default) | 1=GPIOs related to actions are set to HIGH when enabled (eg to be used by LEDs) | 2=GPIOs related to brew o steam ready

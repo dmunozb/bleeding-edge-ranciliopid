@@ -21,7 +21,7 @@
 
 RemoteDebug Debug;
 
-const char* sysVersion PROGMEM = "3.2.1";
+const char* sysVersion PROGMEM = "3.2.2";
 
 /********************************************************
  * definitions below must be changed in the userConfig.h file
@@ -307,11 +307,18 @@ const int enabledHardwareLed = ENABLE_HARDWARE_LED;
 const int enabledHardwareLedNumber = ENABLE_HARDWARE_LED_NUMBER;
 const int enabledWaterTankLed = ENABLE_WATER_TANK_LED;
 const int enabledWaterTankLedNumber = ENABLE_WATER_TANK_LED_NUMBER;
+const int enabledWaterTankLed = ENABLE_WATER_TANK_LED;
+const int enabledWaterTankLedNumber = ENABLE_WATER_TANK_LED_NUMBER;
 float marginOfFluctuation = float(BREW_READY_DETECTION);
 #if (ENABLE_HARDWARE_LED == 2) // WS2812b based LEDs
 #define FASTLED_ESP8266_RAW_PIN_ORDER
 #include <FastLED.h>
 CRGB leds[enabledHardwareLedNumber];
+#endif
+#if (ENABLE_WATER_TANK_LED == 2) // WS2812b based LEDs
+#define FASTLED_ESP8266_RAW_PIN_ORDER
+#include <FastLED.h>
+CRGB leds[enabledWaterTankLedNumber];
 #endif
 #if (ENABLE_WATER_TANK_LED == 2) // WS2812b based LEDs
 #define FASTLED_ESP8266_RAW_PIN_ORDER
@@ -359,11 +366,10 @@ VL53L0X waterSensor;
 #endif
 int waterSensorCheckTimer = 10000; // how often shall the water level be checked (in ms). must be >4000!
 unsigned long previousTimerWaterLevelCheck = 0;
-
 bool isWaterLow = false;
 
 /********************************************************
- * Temperature Sensor: TSIC 30x TEMP / Max6675
+ * Temperature Sensor: TSIC 30x TEMP / Max6675f
  ******************************************************/
 #if (TEMPSENSOR == 3)
   #define TEMPSENSOR_NAME "MAX6675"
@@ -766,6 +772,36 @@ void setHardwareLed(bool mode) {
       fill_solid(leds, enabledHardwareLedNumber, CRGB::ENABLE_HARDWARE_LED_RGB_ON);
     } else {
       fill_solid(leds, enabledHardwareLedNumber, CRGB::ENABLE_HARDWARE_LED_RGB_OFF);
+    }
+    FastLED.show();
+  }
+#endif
+}
+
+void setWaterTankLed(bool mode, bool waterLow) {
+#if (ENABLE_WATER_TANK_LED == 0)
+  return;
+#elif (ENABLE_WATER_TANK_LED == 1)
+  static bool previousMode = false;
+  if (enabledWaterTankLed == 1 && mode != previousMode) {
+    digitalWrite(pinHardwareLed, mode);
+    previousMode = mode;
+  }
+#elif (ENABLE_WATER_TANK_LED == 2)
+  static bool previousMode = false;
+  static bool previousWaterLow = false;
+  if (enabledWaterTankLed == 2 && (mode != previousMode || waterLow != previousWaterLow)) {
+    previousMode = mode;
+    previousWaterLow = waterLow;
+    if (mode) {
+      if(waterLow){
+        fill_solid(leds, enabledWaterTankLedNumber, CRGB::ENABLE_WATER_TANK_LED_RGB_LOW_WATER);
+      }else {
+        fill_solid(leds, enabledWaterTankLedNumber, CRGB::ENABLE_WATER_TANK_LED_RGB_ON);
+      }
+      // fill_solid(leds, enabledWaterTankLedNumber, CRGB::ENABLE_WATER_TANK_LED_RGB_ON);
+    } else {
+      fill_solid(leds, enabledWaterTankLedNumber, CRGB::ENABLE_WATER_TANK_LED_RGB_OFF);
     }
     FastLED.show();
   }
@@ -1717,6 +1753,8 @@ network-issues with your other WiFi-devices on your WiFi-network. */
     setHardwareLed(((brewReady && (ENABLE_HARDWARE_LED_OFF_WHEN_SCREENSAVER == 0 || screenSaverOn == false))) || (steaming && Input >= setPointSteam));
     setWaterTankLed(!screenSaverOn, isWaterLow);
     // digitalWrite(pinWaterTankLed, screenSaverOn);
+    setWaterTankLed(!screenSaverOn, isWaterLow);
+    // digitalWrite(pinWaterTankLed, screenSaverOn);
     if (ENABLE_GPIO_ACTION == 2 && cleaning == 0) {
       digitalWrite(pinHotwaterAction, screenSaverOn);
       digitalWrite(pinBrewAction, !(brewReady && (ENABLE_HARDWARE_LED_OFF_WHEN_SCREENSAVER == 0 || screenSaverOn == false)));
@@ -2132,14 +2170,17 @@ network-issues with your other WiFi-devices on your WiFi-network. */
         snprintf(displayMessageLine1, sizeof(displayMessageLine1), "Water sensor defect");
         maintenanceOperation = 1;
         isWaterLow = false;
+        isWaterLow = false;
       } else if (waterLevelMeasured >= WATER_LEVEL_SENSOR_LOW_THRESHOLD) {
         DEBUG_print("Water level is low: %u mm (low_threshold: %u)\n", waterLevelMeasured, WATER_LEVEL_SENSOR_LOW_THRESHOLD);
         snprintf(displayMessageLine1, sizeof(displayMessageLine1), "Water is low!");
         maintenanceOperation = 1;
         isWaterLow = true;
+        isWaterLow = true;
       } else if (maintenanceOperation == 1) {
         displayMessageLine1[0] = '\0';
         maintenanceOperation = 0;
+        isWaterLow = false;
         isWaterLow = false;
       }
     }
@@ -2341,6 +2382,15 @@ network-issues with your other WiFi-devices on your WiFi-network. */
   pinMode(pinHardwareLed, OUTPUT);
   FastLED.addLeds<WS2812B, pinHardwareLed, GRB>(leds, enabledHardwareLedNumber);
   setHardwareLed(1);
+#endif
+#if (ENABLE_WATER_TANK_LED == 1)
+    pinMode(pinWaterTankLed, OUTPUT);
+    digitalWrite(pinWaterTankLed, LOW);
+    setWaterTankLed(1, 0);
+#elif (ENABLE_WATER_TANK_LED == 2)
+  pinMode(pinWaterTankLed, OUTPUT);
+  FastLED.addLeds<WS2812B, pinWaterTankLed, GRB>(leds, enabledWaterTankLedNumber);
+  setWaterTankLed(1, 0);
 #endif
 #if (ENABLE_WATER_TANK_LED == 1)
     pinMode(pinWaterTankLed, OUTPUT);
@@ -2626,6 +2676,7 @@ network-issues with your other WiFi-devices on your WiFi-network. */
     scalePowerDown();
     #endif
     setHardwareLed(0);
+    setWaterTankLed(0, 0);
     setWaterTankLed(0, 0);
     setGpioAction(BREWING, 0);
     setGpioAction(STEAMING, 0);
