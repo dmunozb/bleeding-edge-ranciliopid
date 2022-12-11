@@ -52,8 +52,8 @@
  *******/
 #define pinTemperature    26   // read temperature (TSIC): esp8266=2, esp32=26
 #define pinRelayHeater    16   // trigger relais used to heat water: esp8266=14, esp32=16
-#define pinRelayVentil    18   // (ONLYPID=0) trigger relais used to open (three-way) valve: esp8266=13, esp32=18
-#define pinRelayPumpe     19   // (ONLYPID=0) trigger relais used to activate the water pump: esp8266=15, esp32=19
+#define pinRelayValve     18   // (ONLYPID=0) trigger relais used to open (three-way) valve: esp8266=13, esp32=18
+#define pinRelayPump      19   // (ONLYPID=0) trigger relais used to activate the water pump: esp8266=15, esp32=19
 #define pinHardwareLed    14   // (ENABLE_HARDWARE_LED=1) Hardware LED (16 is also "free" to use): esp8266=15, esp32=14
 
 #define ENABLE_GPIO_ACTION  2        // 0=off (default) | 1=GPIOs related to actions are set to HIGH when enabled (eg to be used by LEDs) | 2=GPIOs related to brew o steam ready
