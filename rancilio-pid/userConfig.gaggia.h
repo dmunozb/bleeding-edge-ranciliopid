@@ -10,7 +10,7 @@
  * General settings
  *****************************************************/
 #define MACHINE_TYPE "gaggia"  // supported values are "rancilio", "gaggia" and "ecm".
-#define TEMPSENSOR 3          // 2=TSIC306 (fully supported); 3=MAX6690K (working but untested); (1=DS19B20 not supported anymore)
+#define TEMPSENSOR 2          // 2=TSIC306 (fully supported); 3=MAX6690K (working but untested); (1=DS19B20 not supported anymore)
 #define TEMPSENSORRECOVERY 0  // 1 = on, 2= off (default). If off, temp sensor errors will stop the heater until power cycle
 #define FORCE_OFFLINE 0       // 0=Use network | 1=Disable all network stuff (WiFi, MQTT, Blynk).
 #define DISABLE_SERVICES_ON_STARTUP_ERRORS 1 // 1=on (default) when a service cannot be connected during startup, never retry | 0=off Try reconnecting to service during regular operations.
@@ -18,7 +18,7 @@
 #define TRIGGERTYPE HIGH      // LOW = low trigger, HIGH = high trigger relay
 #define OTA true              // true=activate update via OTA
 #define GRAFANA 0             // 0=default(off), 1=enable grafana visualisation by Markus (simply ask him for free access)
-#define EMERGENCY_TEMP 157 //135    // If temperature is higher then notifications are send via display/debug/mqtt and PID is temporary disabled.
+#define EMERGENCY_TEMP 152    // If temperature is higher then notifications are send via display/debug/mqtt and PID is temporary disabled.
                               // Set this to the higest temperature supported by your maschine minus a few degress. (Silvia 5E: 135)
 #define HEATER_INACTIVITY_TIMER 45  // 0=Disable. When there is no activity at the maschine for this amount of minutes, the heater should stop heating until new activity is detected.
 #define BREWTIME_TIMER 1             // 0 (default)=brewtime-countdown is equal BREWTIMEX. 1=brewtime-countdown is BREWTIMEX + PREINFUSIONX + PREINFUSION_PAUSEX
@@ -29,16 +29,19 @@
 #define BREWDETECTION_POWER 50        // heater utiilization (in percent) during brew (BREWDETECTION must be 1)
 
 #define BREW_READY_DETECTION        1.1 // 0=off | 0.x=If measured temperature of the last 60 seconds has been within this defined margin around the SET_POINT, we are able to brew. (defaults: TEMPSENSOR==2: 0.3, TEMPSENSOR==3: 0.9)
-#define ENABLE_HARDWARE_LED         1   // 0=off | 1=Single LED | 2=WS2812b - LEDs at GPO pinLed will lighten when BREW_READY_DETECTION triggers or temperature>SETPOINT_STEAM
+#define ENABLE_HARDWARE_LED         0   // 0=off | 1=Single LED | 2=WS2812b - LEDs at GPO pinLed will lighten when BREW_READY_DETECTION triggers or temperature>SETPOINT_STEAM
 #define ENABLE_HARDWARE_LED_OFF_WHEN_SCREENSAVER 0 // 1=yes | 0=no. If yes, disable LED when screensaver is running
 #define ENABLE_HARDWARE_LED_NUMBER  0   // 0=off | (ENABLE_HARDWARE_LED=2) Number of WS2812b-based LEDs connected
 #define ENABLE_HARDWARE_LED_RGB_ON  LightGreen  // (ENABLE_HARDWARE_LED=2) Color name when leds should be turned on. List of Colours: https://github.com/FastLED/FastLED/wiki/Pixel-reference
 #define ENABLE_HARDWARE_LED_RGB_OFF LightPink  // (ENABLE_HARDWARE_LED=2) Color name when leds should be turned off.
 
-#define ENABLE_WATER_TANK_LED 1 // 1=Enable water tank led | 0=default
+#define ENABLE_WATER_TANK_LED         2   // 2=WS2812b | 1=Enable water tank led | 0=default
+#define ENABLE_WATER_TANK_LED_NUMBER  10  // 0=off | (ENABLE_HARDWARE_LED=2) Number of WS2812b-based LEDs connected
+#define ENABLE_WATER_TANK_LED_RGB_ON  White  // (ENABLE_WATER_TANK_LED=2) Color name when leds should be turned on. List of Colours: https://github.com/FastLED/FastLED/wiki/Pixel-reference
+#define ENABLE_WATER_TANK_LED_RGB_OFF Black  // (ENABLE_WATER_TANK_LED=2) Color name when leds should be turned off.
 #define pinWaterTankLed 4
 
-// #define DEBUGMODE                // to enable Debug uncomment this line. Afterwards you can connect via telnet to port 23 to see debug logs.
+#define DEBUGMODE                // to enable Debug uncomment this line. Afterwards you can connect via telnet to port 23 to see debug logs.
 #define ENABLE_CALIBRATION_MODE 0 // 0=off (default). 1=on. If on, PID is disabled and CALIBRATION information is logged in DEBUG log (eg. CONTROLS_CONFIG, WATER_LEVEL_SENSOR, SCALE_SENSOR)
 
 
@@ -158,9 +161,9 @@
 /*******
  * General PID values
  *******/
-#define SETPOINT_STEAM 145            // Steam Temperature SetPoint (Rancilio: 116, ECM Casa Prima: 145, ...)
-#define STEADYPOWER 4.6 // Constant power of heater to accomodate against loss of heat to environment (in %)
-                        // (Rancilio Silvia 5E: 4.6 , ...)
+#define SETPOINT_STEAM 141            // Steam Temperature SetPoint (Rancilio: 116, ECM Casa Prima: 145, ...)
+#define STEADYPOWER 4.6               // Constant power of heater to accomodate against loss of heat to environment (in %)
+                                      // (Rancilio Silvia 5E: 4.6 , ...)
 #define STEADYPOWER_OFFSET_TIME 850   // If brew group is very cold, we need to put additional power to the heater:
                                       // How long should this additional power be delivered (in s) (Rancilio Silvia 5E: 850, ...)
 #define STEADYPOWER_OFFSET 3.0        // How much power should be added? (in %) (Rancilio Silvia 5E: 2.9, ...)
@@ -197,7 +200,7 @@
 
 #define SETPOINT3 55           // Temperature SetPoint
 #define STARTTEMP3 40          // If temperature is below this value then Coldstart state should be triggered // (Rancilio Silvia 5E: 80.6 , ...)
-#define BREWTIME3 25         // length of time of the brewing (in sec). Used to limit brew time via hardware (ONLYPID=0) or visually (ONLYPID=1).
+#define BREWTIME3 25           // length of time of the brewing (in sec). Used to limit brew time via hardware (ONLYPID=0) or visually (ONLYPID=1).
 #define PREINFUSION3 6         // (ONLYPID!=1) Default=0, length of time of the pre-infusion (in sec). Set to "0" to disable pre-infusion
 #define PREINFUSION_PAUSE3 5   // (ONLYPID!=1) Default=0, length of time of the pre-infusion pause (time in between the pre-infussion and brewing) (in sec). Set to "0" to disable pre-infusion pause.
 #define BREWTIME_END_DETECTION3 0  // 0 (default) = brew will end based on time (requires ONLYPID=0) | 1 = brew will end based on weight (requires SCALE_SENSOR_ENABLE=1)
@@ -207,11 +210,11 @@
 /*******
  * Water level measurement 
  *******/
-#define WATER_LEVEL_SENSOR_ENABLE  0          // 0=Off (default), 1=On  (only VL53L0X supported)
-#define WATER_LEVEL_SENSOR_SDA    17          // (ESP32 only: dedicated I2C bus required)
-#define WATER_LEVEL_SENSOR_SCL     4          // (ESP32 only: dedicated I2C bus required)
-#define WATER_LEVEL_SENSOR_LOW_THRESHOLD 200  // use ENABLE_CALIBRATION_MODE=1 to manually determine correct value (in mm). If measurement is > than this number, the system determines low water.
-
+#define WATER_LEVEL_SENSOR_ENABLE  1              // 0=Off (default), 1=On  (only VL53L0X supported)
+#define WATER_LEVEL_SENSOR_SDA    17              // (ESP32 only: dedicated I2C bus required)
+#define WATER_LEVEL_SENSOR_SCL    23              // (ESP32 only: dedicated I2C bus required)
+#define WATER_LEVEL_SENSOR_LOW_THRESHOLD 140      // use ENABLE_CALIBRATION_MODE=1 to manually determine correct value (in mm). If measurement is > than this number, the system determines low water.
+#define ENABLE_WATER_TANK_LED_RGB_LOW_WATER Red   // (ENABLE_WATER_TANK_LED=2) Color name when leds should be turned on when water level is low. List of Colours: https://github.com/FastLED/FastLED/wiki/Pixel-reference
 
 /*******
  * Scale settings
