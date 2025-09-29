@@ -191,8 +191,11 @@ unsigned long lastSteamMessage = 0;
 int cleaning = 0; // this is the trigger
 int cleaningEnableAutomatic = CLEANING_ENABLE_AUTOMATIC;
 int cleaningCycles = CLEANING_CYCLES;
+// int* activeCleaningCycles = &cleaningCycles;
 int cleaningInterval = CLEANING_INTERVAL;
+// int* activeCleaningInterval = &cleaningInterval;
 int cleaningPause = CLEANING_PAUSE;
+// int* activeCleaningPause = &cleaningPause;
 int cycle = 1;
 
 /********************************************************
@@ -1430,7 +1433,7 @@ void CheckMqttConnection() {
       unsigned int waterLevelMeasured = waterSensor.readRangeContinuousMillimeters();
       if (waterSensor.timeoutOccurred()) {
         ERROR_println("Water level sensor: TIMEOUT");
-        snprintf(displayMessageLine1, sizeof(displayMessageLine1), "Water sensor defect");
+        snprintf(displayMessageLine1, sizeof(displayMessageLine1), "Water sensor defect..");
         maintenanceOperation = 1;
         isWaterLow = false;
       } else if (waterLevelMeasured >= WATER_LEVEL_SENSOR_LOW_THRESHOLD) {
